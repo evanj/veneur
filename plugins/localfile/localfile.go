@@ -9,9 +9,12 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/stripe/veneur/plugins"
 	"github.com/stripe/veneur/plugins/s3"
 	"github.com/stripe/veneur/samplers"
 )
+
+var _ plugins.Plugin = &Plugin{}
 
 // Plugin is the LocalFile plugin that we'll use in Veneur
 type Plugin struct {
@@ -41,12 +44,10 @@ func appendToWriter(appender io.Writer, metrics []samplers.DDMetric, hostname st
 
 	partitionDate := time.Now()
 	for _, metric := range metrics {
-		err := s3.EncodeDDMetricCSV(metric, w, &partitionDate, hostname)
-		if err != nil {
-			return fmt.Errorf("couldn't encode metrics to CSV: %s", err)
-		}
+		s3.EncodeDDMetricCSV(metric, w, &partitionDate, hostname)
 	}
-	return nil
+	w.Flush()
+	return w.Error()
 }
 
 // Name is the name of the LocalFilePlugin, i.e., "localfile"
