@@ -22,6 +22,7 @@ import (
 	"github.com/pkg/profile"
 
 	"github.com/stripe/veneur/plugins"
+	localfilep "github.com/stripe/veneur/plugins/localfile"
 	s3p "github.com/stripe/veneur/plugins/s3"
 	"github.com/stripe/veneur/samplers"
 )
@@ -198,6 +199,14 @@ func NewFromConfig(conf Config) (ret Server, err error) {
 		log.Info("S3 archives are disabled")
 	} else {
 		log.Info("S3 archives are enabled")
+	}
+
+	if conf.FlushFile != "" {
+		localFilePlugin := &localfilep.Plugin{
+			FilePath: conf.FlushFile,
+			Logger:   log,
+		}
+		ret.registerPlugin(localFilePlugin)
 	}
 
 	return
